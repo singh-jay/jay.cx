@@ -1,3 +1,49 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+	.active .nav-indicator {
+		@apply w-16 bg-slate-200;
+	}
+
+	.active .nav-text {
+		@apply text-slate-200;
+	}
+
+	@keyframes rotate {
+		from {
+			rotate: 0deg;
+		}
+
+		50% {
+			scale: 1 1.5;
+		}
+
+		to {
+			rotate: 360deg;
+		}
+	}
+
+	#blob {
+		background-color: white;
+		height: 34vmax;
+		aspect-ratio: 1;
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		translate: -50% -50%;
+		border-radius: 50%;
+		background: linear-gradient(to right, theme("colors.teal.400"), theme("colors.blue.500"), theme("colors.purple.600"));
+		animation: rotate 20s infinite;
+		opacity: 0.4;
+	}
+
+	#blur {
+		height: 100%;
+		width: 100%;
+		position: absolute;
+		z-index: 2;
+		backdrop-filter: blur(16vmax);
+	}
+}

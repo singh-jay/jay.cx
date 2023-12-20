@@ -1,9 +1,13 @@
+"use client";
+
 import About from "./components/Home/About";
 import Experience from "./components/Home/Experience";
 import Projects from "./components/Home/Projects";
 // import Writing from "./components/Home/Writing";
 import Header from "./components/Home/Header";
 import Footer from "./components/Home/Footer";
+import { useIntersectionObserver } from "./hooks/useIntersectionObserver";
+import { useCallback, useEffect, useState } from "react";
 
 {
 	/* <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width"></meta>
@@ -11,26 +15,75 @@ import Footer from "./components/Home/Footer";
 }
 
 export default function Page() {
+	const [observeElement, setObserveElement] = useState<{ [id: string]: HTMLElement }>({});
+	const [activeLink, setActiveLink] = useState("about");
+
+	const callbackRef = useCallback((node: HTMLElement | null) => {
+		if (node) {
+			setObserveElement((oldNodes) => {
+				if (!oldNodes[node.id]) {
+					const nodes = { ...oldNodes };
+					nodes[node.id] = node;
+					return nodes;
+				}
+				return oldNodes;
+			});
+		}
+	}, []);
+
+	const callbackFn = (id: string) => {
+		setActiveLink(id);
+	};
+
+	useIntersectionObserver({
+		observeElement: Object.values(observeElement),
+		callback: callbackFn,
+		config: {
+			unobserveLastElement: false,
+			options: {
+				threshold: 0.5,
+			},
+		},
+	});
+
+	useEffect(() => {
+		const blob = document.getElementById("blob")!;
+
+		const pointerMoveHandler = (event: PointerEvent) => {
+			const { clientX, clientY } = event;
+
+			blob.animate(
+				{
+					left: `${clientX}px`,
+					top: `${clientY}px`,
+				},
+				{ duration: 3000, fill: "forwards" }
+			);
+		};
+
+		document.addEventListener("pointermove", pointerMoveHandler);
+		return () => {
+			document.removeEventListener("pointermove", pointerMoveHandler);
+		};
+	}, []);
+
 	return (
-		<div className="group/spotlight relative">
-			<div className="pointer-events-none fixed inset-0 z-30 transition duration-300 lg:absolute"></div>
-			<div className="mx-auto min-h-screen max-w-screen-xl px-6 py-12 font-sans md:px-12 md:py-20 lg:px-24 lg:py-0">
-				<a
-					href="https://brittanychiang.com/#content"
+		<div className="mx-auto min-h-screen max-w-screen-xl px-6 py-12 font-sans md:px-12 md:py-20 lg:px-24 lg:py-0">
+			{/* <a
+					href="https://jay.cx/#content"
 					className="absolute left-0 top-0 block -translate-x-full rounded bg-gradient-to-br from-teal-400 via-blue-500 to-purple-600 px-4 py-3 text-sm font-bold uppercase tracking-widest text-white focus-visible:translate-x-0"
 				>
 					Skip to Content
-				</a>
-				<div className="lg:flex lg:justify-between lg:gap-4">
-					<Header />
-					<main id="content" className="pt-24 lg:w-1/2 lg:py-24">
-						<About />
-						<Experience />
-						<Projects />
-						{/* <Writing /> */}
-						<Footer />
-					</main>
-				</div>
+				</a> */}
+			<div className="lg:flex lg:justify-between lg:gap-4 relative z-10">
+				<Header activeLink={activeLink} />
+				<main id="content" className="pt-24 lg:w-1/2 lg:py-24">
+					<About ref={callbackRef} />
+					<Experience ref={callbackRef} />
+					<Projects ref={callbackRef} />
+					{/* <Writing /> */}
+					<Footer />
+				</main>
 			</div>
 		</div>
 	);
